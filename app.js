@@ -350,16 +350,16 @@ function summary(key){
 
   const lines = [];
   const pd = PERIODS[state.period].s, first = ps[0], mid = ps[1];
-  lines.push(`${pd}${J(pd,'은','는')} <b>${first.card.name}</b>${J(first.card.name,'으로','로')} 열어서 <b>${ps[2].card.name}</b>${J(ps[2].card.name,'으로','로')} 마무리돼요. 진짜 신경 써야 할 건 가운데 <b>${mid.card.name}</b>${J(mid.card.name,'이','가')}예요.`);
-  if (majors >= 2) lines.push(`메이저가 ${majors}장이나 나왔어요. 이쯤 되면 애쓰는 게 아니라 <b>흐름이 당신을 밀어주는 중</b>이에요.`);
-  else if (majors === 1) lines.push(`메이저 한 장이 ${pd} <b>진짜 주인공</b>이에요. 나머지 둘은 곁다리로 봐도 돼요.`);
-  else lines.push('셋 다 마이너예요. 극적인 사건 기대했으면 미안해요, 답은 <b>오늘의 사소한 일</b>에 있어요.');
-  if (revs === 0) lines.push('역방향이 한 장도 없어요. <b>이번엔 대놓고 순조로워요</b>, 의심하지 말고 그냥 타요.');
-  else if (revs === 3) lines.push('셋 다 역방향이에요. 오늘은 뭘 벌이지 말고 <b>정리하고 다지는 날</b>로 써요. 이런 날도 있어야 다음이 괜찮아요.');
-  else lines.push(`역방향이 ${revs}장이에요. 전체적으로 나쁘지 않은데 딱 그 한 자리만 <b>손볼 게</b> 있어요.`);
-  if (sameSuit) { const sk = SUITS[suits[0]].k; lines.push(`<b>${sk}</b>${J(sk,'이','가')} 두 장 이상 겹쳤어요. 지금 당신 인생, <b>${SUITS[suits[0]].f}</b> 쪽에 올인 중이에요.`); }
+  lines.push(`${pd}${J(pd,'은','는')} <b>${first.card.name}</b>${J(first.card.name,'으로','로')} 열어서 <b>${ps[2].card.name}</b>${J(ps[2].card.name,'으로','로')} 마무리됨. 진짜 신경 쓸 건 가운데 <b>${mid.card.name}</b>${J(mid.card.name,'이','가')}야.`);
+  if (majors >= 2) lines.push(`메이저가 ${majors}장이나 나왔어. 이쯤 되면 네가 애쓰는 게 아니라 <b>흐름이 널 밀어주는 중</b>이야.`);
+  else if (majors === 1) lines.push(`메이저 한 장이 ${pd} <b>진짜 주인공</b>이야. 나머지 둘은 곁다리로 봐도 됨.`);
+  else lines.push('셋 다 마이너야. 극적인 사건 기대했으면 미안한데, 답은 <b>오늘의 사소한 일</b>에 있어.');
+  if (revs === 0) lines.push('역방향이 한 장도 없어. <b>이번엔 대놓고 순조로움</b>. 의심하지 말고 그냥 타.');
+  else if (revs === 3) lines.push('셋 다 역방향이야. 오늘은 뭘 벌이지 말고 <b>정리하고 다지는 날</b>로 써. 이런 날도 있어야 다음이 괜찮아.');
+  else lines.push(`역방향이 ${revs}장이야. 전체적으로 나쁘지 않은데 딱 그 한 자리만 <b>손볼 게</b> 있어.`);
+  if (sameSuit) { const sk = SUITS[suits[0]].k; lines.push(`<b>${sk}</b>${J(sk,'이','가')} 두 장 이상 겹쳤어. 지금 네 인생, <b>${SUITS[suits[0]].f}</b> 쪽에 올인 중이야.`); }
   const last = ps[2];
-  lines.push(`결론만 말할게요. <b>${last.card.name}</b>${last.rev ? ' 역방향' : ''}. ${last.card.txt[key][last.rev?1:0]}`);
+  lines.push(`결론만 말함. <b>${last.card.name}</b>${last.rev ? ' 역방향' : ''}. ${last.card.txt[key][last.rev?1:0]}`);
 
   $('sumBody').innerHTML = lines.map(l => '<p>' + l + '</p>').join('');
   countUp($('scoreV'), score, RM.matches ? 0 : 900);
