@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>타로</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div class="wrap">
+
+  <section class="step on" id="sTopic">
+    <h1>타로</h1>
+    <p class="lead">무엇이 궁금한가요</p>
+    <div class="topics" id="topics"></div>
+    <div class="qrow"><input id="q" placeholder="질문 (선택)" maxlength="60"></div>
+    <button class="btn" id="go" disabled>섞기</button>
+  </section>
+
+  <section class="step" id="sShuffle">
+    <h1>섞는 중</h1>
+    <p class="lead">질문을 떠올리세요</p>
+    <div class="shuffle" id="shuffleStage"></div>
+    <div class="sh-msg" id="shMsg"></div>
+  </section>
+
+  <section class="step" id="sFan">
+    <h1>세 장</h1>
+    <p class="lead" id="fanHint">끌리는 카드를 고르세요</p>
+    <div class="picked" id="picked"></div>
+    <div class="fan" id="fan"></div>
+  </section>
+
+  <section class="step" id="sRes">
+    <p class="res-q" id="resQ"></p>
+    <h1 class="res-tp" id="resTp"></h1>
+    <div id="spread"></div>
+    <div class="sum">
+      <h3>풀이</h3>
+      <div id="sumBody"></div>
+      <div class="score"><div class="bar"><div class="fill" id="scoreFill"></div></div><div class="v" id="scoreV"></div></div>
+      <div class="lucky" id="lucky"></div>
+    </div>
+    <div class="row2">
+      <button class="btn ghost" id="redraw">다시</button>
+      <button class="btn" id="again">처음</button>
+    </div>
+  </section>
+
+</div>
+<script src="deck.js"></script>
+<script src="app.js"></script>
+</body></html>
