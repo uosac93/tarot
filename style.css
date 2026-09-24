@@ -77,8 +77,14 @@ h1{margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:-.3px}
 .card.flip{transform:rotateY(180deg)}
 
 /* 섞기 */
-.shuffle{position:relative;height:250px;display:flex;align-items:center;justify-content:center;margin:20px 0 18px}
-.shuffle .card{position:absolute;--cw:92px;--ch:158px;box-shadow:0 10px 30px -14px #000}
+/* 셔플 — 완전히 다시 짰다(2026-09 사용자 : 「너무 구림 · 완전 대개편」).
+   전엔 카드가 구석에 작게 몰려 뭘 하는지 안 보였다. 지금은 무대 전체를 쓰고, 카드도 크다 */
+.shuffle{position:relative;height:340px;width:min(92vw,360px);margin:14px auto 10px}
+.shuffle .card{position:absolute;left:50%;top:50%;--cw:108px;--ch:184px;
+ margin:calc(var(--ch,184px) / -2) 0 0 calc(var(--cw,108px) / -2);
+ box-shadow:0 14px 34px -14px #000,0 2px 8px -2px #000}
+.shuffle .card .face{border-color:#3f3f3f}
+.shuffle .card .back::after{border-color:#5a5a5a}
 .sh-msg{text-align:center;color:#8c8a84;font-size:14px;min-height:20px}
 
 /* 원형 — 카드 21장이 «나» 를 빙 둘러싼다(2026-09 옵션 10개 중 ⑥ 채택).

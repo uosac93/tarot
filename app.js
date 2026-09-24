@@ -78,6 +78,13 @@ function initTopics(){
 }
 
 /* ── 2. 섞기 ── */
+/* 셔플 — 완전히 다시 짰다(2026-09 사용자 : 「애니메이션 카드 섞는거 너무 구림 · 싹다 갈아엎어 ·
+   완전 대개편」). 전엔 카드가 구석에 작게 몰려 있어 뭘 하는지 안 보였다.
+   지금은 무대 전체를 쓰고, «펼치기 → 모으기 → 나누기 → 리플(다리 모양 아치) → 나누기 → 리플 → 정리»
+   순서로 실제 카드 셔플의 손동작을 흉내 낸다. Web Animations API 로 카드마다 다른 궤적을 준다 */
+function anim(el, kf, opt){ return el.animate(kf, { duration: opt.d, delay: opt.delay||0, easing: opt.ease||'cubic-bezier(.22,.68,.28,1)', fill:'forwards' }).finished.catch(()=>{}); }
+const jit = (n) => (Math.random()*2-1)*n;
+
 async function shuffle(){
   go('sShuffle');
   const st = $('shuffleStage'); st.innerHTML = '';
@@ -85,26 +92,83 @@ async function shuffle(){
   for (let i = 0; i < N; i++) {
     const c = cardEl(null, false, false);
     c.style.zIndex = i;
-    c.style.transform = 'translate(0,0) rotate(0deg)';
+    c.style.transform = `translate(0px,0px) rotate(${jit(1.5)}deg) scale(1)`;
+    c.style.opacity = '0';
     st.appendChild(c); els.push(c);
   }
   const msg = $('shMsg');
-  const steps = [['펼치기',spread],['나누기',cut],['섞기',riffle],['섞기',riffle],['섞기',riffle],['모으기',gather]];
-  for (const [m, fn] of steps) { msg.textContent = m; await fn(els); await wait(RM.matches ? 40 : 200); }
-  msg.textContent = ''; await wait(380);
+  if (RM.matches) { msg.textContent = ''; els.forEach(c => c.style.opacity = '1'); await wait(60); fanOut(); return; }
+
+  // 0. 덱이 툭 놓인다 — 살짝 튀었다 자리 잡는 «착지»
+  msg.textContent = '섞을 준비';
+  await Promise.all(els.map((c,i) => anim(c,
+    [{ transform:`translate(0px,-30px) rotate(${jit(2)}deg) scale(.85)`, opacity:0 },
+     { transform:`translate(0px,4px) rotate(${jit(1.5)}deg) scale(1.03)`, opacity:1, offset:.75 },
+     { transform:`translate(0px,0px) rotate(${jit(1.5)}deg) scale(1)`, opacity:1 }],
+    { d:380, delay:i*14, ease:'cubic-bezier(.2,.9,.3,1.1)' })));
+  await wait(120);
+
+  // 1. 펼치기 — 부채꼴로 활짝, 화면 폭을 다 쓴다
+  msg.textContent = '펼치는 중';
+  await Promise.all(els.map((c,i) => {
+    const p = i - (N-1)/2, x = p*24, y = -Math.abs(p)*7, r = p*8.5;
+    return anim(c, [{}, { transform:`translate(${x}px,${y}px) rotate(${r}deg) scale(1)` }],
+      { d:620, delay:i*16, ease:'cubic-bezier(.22,.9,.28,1)' });
+  }));
+  await wait(280);
+
+  // 2. 모으기 — 확 빨려 들어오듯 한 장으로. 살짝 지나쳤다 돌아오는 스냅
+  msg.textContent = '모으는 중';
+  await Promise.all(els.map((c,i) => anim(c,
+    [{}, { transform:`translate(0px,0px) rotate(${jit(6)}deg) scale(1.06)`, offset:.7 },
+     { transform:`translate(0px,0px) rotate(${jit(1.5)}deg) scale(1)` }],
+    { d:380, delay:(N-1-i)*10, ease:'cubic-bezier(.3,.7,.3,1.3)' })));
+  await wait(160);
+
+  // 3·4. «나누기 → 다리 모양으로 아치 그리며 착착 겹치기» 를 두 번 반복한다 — 진짜 손 셔플의 핵심 동작
+  for (let pass = 0; pass < 2; pass++) {
+    msg.textContent = '나누는 중';
+    const half = N/2;
+    await Promise.all(els.map((c,i) => {
+      const left = i < half, side = left ? -1 : 1, k = left ? i : i-half;
+      return anim(c,
+        [{}, { transform:`translate(${side*54}px,-14px) rotate(${side*-7}deg) scale(1.02)`, offset:.5 },
+         { transform:`translate(${side*58}px,${k*2.2}px) rotate(${side*-6 + jit(2)}deg) scale(1)` }],
+        { d:420, delay:k*22, ease:'cubic-bezier(.25,.8,.3,1)' });
+    }));
+    await wait(160);
+
+    msg.textContent = '섞는 중';
+    // 리플 — 양쪽 더미 안쪽 카드부터 번갈아 다리처럼 위로 솟았다 가운데로 떨어져 겹친다
+    const order = [];
+    for (let k = 0; k < half; k++) { order.push(k); order.push(half + k); }   // 안쪽부터 교차
+    await Promise.all(order.map((i, seq) => {
+      const left = i < half, side = left ? -1 : 1, k = left ? i : i-half;
+      const fromX = side*58, fromY = k*2.2, fromR = side*-6;
+      const peakX = side*22, peakY = -52 - k*1.4;
+      const finalR = (i%2 ? 1 : -1) * (2 + jit(3));
+      return anim(els[i],
+        [{ transform:`translate(${fromX}px,${fromY}px) rotate(${fromR}deg) scale(1)` },
+         { transform:`translate(${peakX}px,${peakY}px) rotate(${jit(14)}deg) scale(1.08)`, offset:.42 },
+         { transform:`translate(0px,${jit(2)}px) rotate(${finalR}deg) scale(1)` }],
+        { d:460, delay:seq*17, ease:'cubic-bezier(.3,.05,.25,1)' });
+    }));
+    els.forEach((c,i) => { c.style.zIndex = i; });
+    await wait(180);
+  }
+
+  // 5. 정리 — 옆면을 톡톡 쳐서 가지런히 맞추는 느낌으로 두 번 흔들고 딱 정렬
+  msg.textContent = '정리하는 중';
+  await Promise.all(els.map((c,i) => anim(c,
+    [{}, { transform:'translate(-4px,0px) rotate(-1deg) scale(1)', offset:.25 },
+     { transform:'translate(3px,0px) rotate(1deg) scale(1)', offset:.5 },
+     { transform:'translate(-2px,0px) rotate(-.5deg) scale(1)', offset:.75 },
+     { transform:`translate(0px,0px) rotate(${jit(.8)}deg) scale(1)` }],
+    { d:420, delay:i*6, ease:'ease-out' })));
+
+  msg.textContent = ''; await wait(320);
   fanOut();
 }
-function setT(els, f){ els.forEach((c,i) => { c.style.transition = 'transform .5s cubic-bezier(.2,.7,.3,1)'; c.style.transform = f(i, els.length); }); }
-async function spread(els){ setT(els, (i,n) => { const p = (i-(n-1)/2); return `translate(${p*17}px,${Math.abs(p)*2}px) rotate(${p*3}deg)`; }); await wait(560); }
-async function cut(els){ setT(els, (i,n) => i < n/2 ? `translate(-92px,${i*3}px) rotate(-6deg)` : `translate(92px,${(i-n/2)*3}px) rotate(6deg)`); await wait(560); }
-async function riffle(els){
-  setT(els, (i,n) => i < n/2 ? `translate(-46px,${i*2-9}px) rotate(-3deg)` : `translate(46px,${(i-n/2)*2-9}px) rotate(3deg)`);
-  await wait(300);
-  els.forEach((c,i) => { c.style.zIndex = (i % 2 ? i : i + 40); });
-  setT(els, i => `translate(0,${(i-7)*1.6}px) rotate(${(i%2?1:-1)*1.2}deg)`);
-  await wait(340);
-}
-async function gather(els){ setT(els, i => `translate(0,${(i-7)*1.1}px) rotate(${(i-7)*.5}deg)`); await wait(520); }
 
 /* ── 3. 부채 펼침 ── */
 /* 부채는 카드가 서로 덮는다. 카드마다 hover/click 을 걸면 «위에 얹힌 카드» 가 클릭을 가로채
