@@ -215,15 +215,15 @@ function summary(key){
   score = Math.max(12, Math.min(98, score));
 
   const lines = [];
-  if (majors >= 2) lines.push(`메이저 ${majors}장. <b>큰 흐름이 미는 때</b>.`);
-  else if (majors === 1) lines.push('메이저 한 장이 <b>열쇠</b>.');
-  else lines.push('전부 마이너. <b>일상에서</b> 답이 나온다.');
-  if (revs === 0) lines.push('역방향 없음. <b>막힌 데 없다.</b>');
-  else if (revs === 3) lines.push('셋 다 역방향. <b>덜어내는 때.</b>');
-  else lines.push(`역방향 ${revs}장. <b>손볼 매듭</b>이 있다.`);
-  if (sameSuit) lines.push(`<b>${SUITS[suits[0]].k}</b>가 겹침 — ${SUITS[suits[0]].f}.`);
+  if (majors >= 2) lines.push(`메이저 카드가 ${majors}장 나왔습니다. 스스로 애쓰기보다 <b>큰 흐름이 밀어주는 때</b>입니다.`);
+  else if (majors === 1) lines.push('메이저 카드 한 장이 이번 풀이의 <b>열쇠</b>입니다.');
+  else lines.push('전부 마이너 카드입니다. 큰 사건보다 <b>일상의 작은 일</b>에서 답이 나옵니다.');
+  if (revs === 0) lines.push('역방향이 하나도 없습니다. <b>막힌 데 없이</b> 흐릅니다.');
+  else if (revs === 3) lines.push('세 장 모두 역방향입니다. 지금은 나아가기보다 <b>덜어내는 때</b>입니다.');
+  else lines.push(`역방향이 ${revs}장 있습니다. 좋은 흐름 안에 <b>손봐야 할 매듭</b>이 있습니다.`);
+  if (sameSuit) lines.push(`<b>${SUITS[suits[0]].k}</b> 카드가 겹쳤습니다. 지금은 <b>${SUITS[suits[0]].f}</b>에 힘이 몰려 있습니다.`);
   const last = ps[2];
-  lines.push(`결론은 <b>${last.card.name}</b>${last.rev ? '(역)' : ''} — ${last.card.txt[key][last.rev?1:0]}`);
+  lines.push(`결론은 <b>${last.card.name}</b>${last.rev ? ' 역방향' : ''}입니다. ${last.card.txt[key][last.rev?1:0]}`);
 
   $('sumBody').innerHTML = lines.map(l => '<p>' + l + '</p>').join('');
   $('scoreV').textContent = score;
