@@ -8,15 +8,22 @@ const TOPICS = {
   all:   {t:'종합', d:'전체 흐름',            pos:['과거','현재','미래']}
 };
 const TOPIC_KEY = {love:'love', money:'money', work:'work', self:'self', all:'self'};
+const PERIODS = { today:{t:'오늘', s:'오늘 하루'}, week:{t:'이번 주', s:'이번 주'}, month:{t:'이번 달', s:'이번 달'} };
 
 const COLORS = [['흰색','#f2f0ea'],['검정','#111'],['파랑','#2f6f9f'],['초록','#2f8f4e'],['주황','#e08a3c'],['남색','#22304a'],['빨강','#b5433f'],['회색','#8c8a84']];
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const $ = id => document.getElementById(id);
+/* 조사 — 받침 유무로 고른다. 이름 뒤에 붙일 «조사만» 돌려준다. ㄹ 받침은 «로». 숫자 카드는 삼·육·십 받침, 칠·팔은 ㄹ */
+function J(w, a, b){ const m = w.match(/(\d+)$/);
+  if (m) { const n = +m[1]; const hasJong = {3:1,6:1,10:1}[n], isL = {7:1,8:1}[n];
+    return hasJong ? a : (isL ? (a === '으로' ? b : a) : b); }
+  const c = w.charCodeAt(w.length-1); if (c < 0xAC00 || c > 0xD7A3) return b;
+  const jong = (c - 0xAC00) % 28; if (jong === 0) return b; if (a === '으로' && jong === 8) return b; return a; }
 const rnd = n => Math.floor(Math.random()*n);
 const wait = ms => new Promise(r => setTimeout(r, RM.matches ? Math.min(ms,60) : ms));
 
-let state = { topic:null, q:'', deck:[], fan:[], picks:[] };
+let state = { topic:null, period:'today', q:'', deck:[], fan:[], picks:[] };
 
 /* ── 카드 DOM ── */
 function cardEl(card, faceUp, rev){
@@ -37,6 +44,12 @@ function toRoman(n){
 
 /* ── 1. 주제 ── */
 function initTopics(){
+  const pb = $('periods');
+  for (const [k,pp] of Object.entries(PERIODS)) {
+    const b = document.createElement('button'); b.className = 'pd' + (k===state.period?' sel':''); b.type='button'; b.dataset.k = k; b.textContent = pp.t;
+    b.onclick = () => { document.querySelectorAll('.pd').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); state.period = k; };
+    pb.appendChild(b);
+  }
   const box = $('topics');
   for (const [k,t] of Object.entries(TOPICS)) {
     const b = document.createElement('button');
@@ -180,7 +193,7 @@ async function reveal(){
   go('sRes');
   const tp = TOPICS[state.topic], key = TOPIC_KEY[state.topic];
   $('resQ').textContent = state.q || '';
-  $('resTp').textContent = tp.t;
+  $('resTp').textContent = PERIODS[state.period].t + ' ' + tp.t;
 
   const sp = $('spread'); sp.innerHTML = '';
   state.picks.forEach((p, i) => {
@@ -192,7 +205,7 @@ async function reveal(){
       <div class="nm">${c.name}</div>
       <div class="dir ${rev?'r':'u'}">${rev ? '역방향' : '정방향'}</div>
       <div class="kw">${(rev ? c.rv : c.up).join(' · ')}</div>
-      <div class="msg">${c.txt[key][rev ? 1 : 0]}</div></div>`;
+      <div class="msg"><p class="ab">${c.about[rev ? 1 : 0]}</p><p>${c.txt[key][rev ? 1 : 0]}</p></div></div>`;
     const cd = cardEl(c, false, rev);
     el.querySelector('.ch').appendChild(cd);
     sp.appendChild(el);
@@ -215,15 +228,17 @@ function summary(key){
   score = Math.max(12, Math.min(98, score));
 
   const lines = [];
+  const pd = PERIODS[state.period].s, first = ps[0], mid = ps[1];
+  lines.push(`${pd}는 <b>${first.card.name}</b>${J(first.card.name,'으로','로')} 시작해 <b>${ps[2].card.name}</b>${J(ps[2].card.name,'으로','로')} 이어지는 흐름입니다. 가운데 <b>${mid.card.name}</b>${J(mid.card.name,'이','가')} ${pd} 가장 신경 쓸 자리입니다.`);
   if (majors >= 2) lines.push(`메이저 카드가 ${majors}장 나왔습니다. 스스로 애쓰기보다 <b>큰 흐름이 밀어주는 때</b>입니다.`);
   else if (majors === 1) lines.push('메이저 카드 한 장이 이번 풀이의 <b>열쇠</b>입니다.');
   else lines.push('전부 마이너 카드입니다. 큰 사건보다 <b>일상의 작은 일</b>에서 답이 나옵니다.');
   if (revs === 0) lines.push('역방향이 하나도 없습니다. <b>막힌 데 없이</b> 흐릅니다.');
-  else if (revs === 3) lines.push('세 장 모두 역방향입니다. 지금은 나아가기보다 <b>덜어내는 때</b>입니다.');
-  else lines.push(`역방향이 ${revs}장 있습니다. 좋은 흐름 안에 <b>손봐야 할 매듭</b>이 있습니다.`);
+  else if (revs === 3) lines.push('세 장 모두 역방향입니다. 무리하지 않고 <b>정리하고 다지는 시간</b>으로 쓰면 다음이 좋아집니다.');
+  else lines.push(`역방향이 ${revs}장 있습니다. 전체 흐름은 좋고, 그 자리만 <b>조금 손보면</b> 더 잘 풀립니다.`);
   if (sameSuit) lines.push(`<b>${SUITS[suits[0]].k}</b> 카드가 겹쳤습니다. 지금은 <b>${SUITS[suits[0]].f}</b>에 힘이 몰려 있습니다.`);
   const last = ps[2];
-  lines.push(`결론은 <b>${last.card.name}</b>${last.rev ? ' 역방향' : ''}입니다. ${last.card.txt[key][last.rev?1:0]}`);
+  lines.push(`${pd}의 결론은 <b>${last.card.name}</b>${last.rev ? ' 역방향' : ''}입니다. ${last.card.txt[key][last.rev?1:0]}`);
 
   $('sumBody').innerHTML = lines.map(l => '<p>' + l + '</p>').join('');
   $('scoreV').textContent = score;
@@ -242,8 +257,9 @@ function go(id){
   $(id).classList.add('on');
   window.scrollTo({ top: 0, behavior: RM.matches ? 'auto' : 'smooth' });
 }
-function restart(){ state = { topic:null, q:'', deck:[], fan:[], picks:[] };
+function restart(){ state = { topic:null, period:'today', q:'', deck:[], fan:[], picks:[] };
   document.querySelectorAll('.tp').forEach(x => x.classList.remove('sel'));
+  document.querySelectorAll('.pd').forEach(x => x.classList.toggle('sel', x.dataset.k==='today'));
   $('go').disabled = true; $('q').value = ''; go('sTopic'); }
 
 window.addEventListener('DOMContentLoaded', () => {

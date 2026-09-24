@@ -13,6 +13,11 @@ h1{margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:-.3px}
 @keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.step.on{animation:none}}
 
+/* 기간 — 가로 셋 */
+.periods{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #2a2a2a;margin-bottom:26px}
+.pd{padding:13px 0;border:0;background:none;color:#8c8a84;font:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s,color .15s}
+.pd+.pd{border-left:1px solid #2a2a2a}
+.pd.sel{background:#f2f0ea;color:#000}
 /* 주제 — 줄 목록 */
 .topics{border-top:1px solid #2a2a2a;margin-bottom:22px}
 .tp{display:flex;align-items:baseline;gap:12px;width:100%;padding:17px 4px;border:0;border-bottom:1px solid #2a2a2a;
@@ -87,7 +92,10 @@ h1{margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:-.3px}
 .rc .dir{font-size:12px;color:#8c8a84;margin-bottom:10px}
 .rc .dir.r{color:#c0553f}
 .rc .kw{font-size:12.5px;color:#8c8a84;margin-bottom:9px}
-.rc .msg{font-size:14px;line-height:1.6}
+.rc .msg{font-size:14px;line-height:1.65}
+.rc .msg p{margin:0 0 8px}
+.rc .msg p:last-child{margin-bottom:0}
+.rc .msg .ab{color:#a8a59e;font-size:13px}
 
 .sum{border-top:1px solid #2a2a2a;padding:22px 0 6px;margin-top:4px}
 .sum h3{margin:0 0 12px;font-size:12px;font-weight:700;color:#8c8a84;letter-spacing:.4px}
