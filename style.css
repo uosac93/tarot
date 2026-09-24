@@ -73,10 +73,17 @@ h1{margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:-.3px}
 @media(prefers-reduced-motion:reduce){.fan .slot{transition:none}}
 
 .picked{display:flex;gap:0;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;margin-bottom:6px}
-.pk{flex:1;padding:10px 0;text-align:center;font-size:12.5px;color:#5c5a55;transition:color .2s,background .2s}
+.pk{flex:1;padding:9px 0 8px;text-align:center;font-size:12.5px;color:#5c5a55;transition:color .2s,background .2s}
 .pk+.pk{border-left:1px solid #2a2a2a}
-.pk.on{color:#f2f0ea}
+.pk.on{color:#f2f0ea;cursor:pointer}
+.pk.on:active{background:#111}
 .pk .n{display:block;font-size:10px;color:#5c5a55;margin-bottom:1px}
+.pk .mini{display:block;width:24px;height:39px;margin:6px auto 0;border:1px dashed #2a2a2a;background:#000;transition:border-color .2s,background .2s}
+.pk.on .mini{border:1px solid #f2f0ea;border-style:solid;background:#0b0b0b}
+.card.fly{position:fixed;z-index:50;pointer-events:none;transform-origin:top left;
+ transition:transform .5s cubic-bezier(.2,.7,.3,1)}
+.card.fly .face{border-color:#f2f0ea}
+#reveal{margin-top:4px}
 
 /* 결과 */
 .res-q{color:#8c8a84;font-size:13px;margin:0 0 4px}

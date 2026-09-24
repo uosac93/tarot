@@ -173,19 +173,46 @@ function bindFan(){
 function drawSlots(){
   const pos = TOPICS[state.topic].pos, box = $('picked');
   box.innerHTML = pos.map((p,i) =>
-    `<div class="pk${state.picks[i] ? ' on' : ''}"><span class="n">${i+1}</span>${p}</div>`).join('');
-  $('fanHint').textContent = state.picks.length < 3 ? `${3 - state.picks.length}장 남았습니다` : '';
+    `<div class="pk${state.picks[i] ? ' on' : ''}" data-k="${i}"><span class="n">${i+1}</span>${p}<span class="mini"></span></div>`).join('');
+  box.querySelectorAll('.pk.on').forEach(el => el.onclick = () => unpick(+el.dataset.k));
+  const n = state.picks.length;
+  $('fanHint').textContent = n < 3 ? `${3 - n}장 남았습니다` : '위 카드를 누르면 다시 고를 수 있습니다';
+  $('reveal').hidden = n < 3;
+}
+/* 카드 하나가 «여기서 저기로» 날아간다. 부채 카드 자리에서 위 자리표로, 되돌릴 때는 반대로.
+   실제 요소는 두지 않고 복제 카드 한 장을 fixed 로 띄워 옮긴 뒤 지운다 */
+function fly(from, to, cb){
+  if (RM.matches || !from || !to) { cb && cb(); return; }
+  const a = from.getBoundingClientRect(), z = to.getBoundingClientRect();
+  const el = document.createElement('div'); el.className = 'card fly';
+  el.innerHTML = '<div class="face back"></div>';
+  el.style.left = a.left + 'px'; el.style.top = a.top + 'px'; el.style.width = a.width + 'px'; el.style.height = a.height + 'px';
+  document.body.appendChild(el); void el.offsetWidth;
+  const sx = z.width / a.width, sy = z.height / a.height;
+  el.style.transform = `translate(${z.left - a.left}px, ${z.top - a.top}px) scale(${sx}, ${sy})`;
+  let done = false; const fin = () => { if (done) return; done = true; el.remove(); cb && cb(); };
+  el.addEventListener('transitionend', fin, { once:true }); setTimeout(fin, 700);
 }
 function pick(i){
   const s = $('fan').querySelectorAll('.slot')[i];
   if (!s || state.picks.length >= 3 || s.classList.contains('taken')) return;
   if (hot === i) hot = -1;
-  s.classList.remove('hot'); s.classList.add('taken', 'pick');
+  s.classList.remove('hot'); s.classList.add('taken');
   s.style.zIndex = i; s.style.transform = restT(slotAng(i));
-  const card = state.fan[i];
-  state.picks.push({ card, rev: Math.random() < 0.32 });
+  const card = state.fan[i], k = state.picks.length;
+  state.picks.push({ i, card, rev: Math.random() < 0.32 });
+  const target = $('picked').querySelectorAll('.pk')[k];
+  const mini = target && target.querySelector('.mini');
+  fly(s, mini || target, () => drawSlots());
+}
+function unpick(k){
+  const p = state.picks[k]; if (!p) return;
+  const slotEl = $('picked').querySelectorAll('.pk')[k], mini = slotEl && slotEl.querySelector('.mini');
+  const fanEl = $('fan').querySelectorAll('.slot')[p.i];
+  state.picks.splice(k, 1);
+  $('reveal').hidden = true;
+  fly(mini || slotEl, fanEl, () => { if (fanEl) fanEl.classList.remove('taken'); drawSlots(); });
   drawSlots();
-  if (state.picks.length === 3) setTimeout(reveal, RM.matches ? 60 : 520);
 }
 
 /* ── 4. 해석 ── */
@@ -266,6 +293,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initTopics(); bindFan();
   $('go').onclick = () => { state.q = $('q').value.trim(); shuffle(); };
   $('again').onclick = restart;
+  $('reveal').onclick = () => { if (state.picks.length === 3) reveal(); };
   $('redraw').onclick = () => shuffle();
   $('q').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('go').disabled) $('go').click(); });
 });
